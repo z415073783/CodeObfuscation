@@ -1,7 +1,7 @@
 import Foundation
 import MMScriptFramework
 MMLOG.info("Hello, this is my world!")
-MMLOG.info("shell path = \(kShellPath)")
+MMLOG.info("工具所在目录 = \(kShellPath)")
 
 
 
