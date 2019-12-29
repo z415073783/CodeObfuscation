@@ -26,9 +26,24 @@ class RegularFunc {
         var pattern = checkChar(name: oldName)
         //增加前后过滤规则
         pattern = "(?<![a-zA-Z_=\\.])\(pattern)(?![a-zA-Z_=\\.])"
-        MMLOG.info("pattern = \(pattern)")
+//        MMLOG.info("pattern = \(pattern)")
         return container.regularExpressionReplace(pattern: pattern, with: newName) ?? container
     }
+    
+    /// 检查文件内容并替换新名字
+    /// - Parameters:
+    ///   - container: 主体
+    ///   - oldName: 原有名字
+    ///   - newName: 新名字
+    class func replaceNewName(container: String, oldName: String, newName: String) -> String {
+        var pattern = checkChar(name: oldName)
+        pattern = "(?<![a-zA-Z_=\\-])\(pattern)(?![a-zA-Z_=\\-])"
+//        MMLOG.info("pattern = \(pattern)")
+        return container.regularExpressionReplace(pattern: pattern, with: newName) ?? container
+    }
+    
+    
+    
     //过滤正则符号
     class func checkChar(name: String) -> String {
         var pattern = ""

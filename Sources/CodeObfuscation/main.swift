@@ -7,6 +7,10 @@ MMLOG.info("shell path = \(kShellPath)")
 
 ProcessInfo.processInfo.isHelp(helpStr: """
 --------------------------代码混淆工具------------------------------
+使用事项:
+    本工具只会对头文件和类名相同的类进行添加前缀,如果文件名和类名不同,则不会修改类名. 后续有时间的话再添加单独识别类名的功能
+    
+    
 type     0 | 1 | 2     0:添加前缀, 1: 变更前缀(如果文件的前缀不存在,则主动添加前缀), 2: 添加垃圾代码(未实现)
 needPreName   需要添加的前缀
 orgPreName   "name1,name2,name3..."   当type=0 | 1时,必填  需要替换的前缀列表
@@ -90,7 +94,7 @@ for item in changeFilePathList {
             let model = ChangeFileData(oriName: item.name, path: item.path, newName: newName)
             needChangeFiles[model.oriName] = model
             newFileNames[newName] = model
-            MMLOG.info("需要变更的文件名 = \(model.oriName) 新名字: \(model.newName ?? "")")
+            MMLOG.info("需要变更的文件名 = \(model.oriName) 新名字: \(model.newName)")
             continue
         }
     }
@@ -131,7 +135,7 @@ for (key, model) in needChangeFiles {
             projectContainer = RegularFunc.checkAndReplace(container: projectContainer as String, oldName: model.oriName, newName: model.newName) as NSString
             try projectContainer.write(toFile: xcodeProjModel.fullPath(), atomically: true, encoding: String.Encoding.utf8.rawValue)
         } catch {
-            MMLOG.error("配置文件读取失败")
+            MMLOG.error("配置文件读取失败 error = \(error)")
             exit(5)
         }
     }
@@ -153,10 +157,30 @@ for (key, model) in needChangeFiles {
 }
 
 //变更影响范围下的所有文件内容
+MMLOG.info("开始变更影响范围")
 //changedNames
-
-
-
-
+//rootPath
+let rootFilePathList = FileControl.getFilePath(rootPath: rootPath, selectFile: "", isSuffix: false, onlyOne: false)
+for item in rootFilePathList {
+    //过滤不用变更前缀的文件名及前缀
+    //影响的文件类型
+    for type in effectTypeList {
+        if item.name.hasSuffix(".\(type)") {
+            do {
+                //            需要修改的文件
+                var container = try NSString(contentsOfFile: item.fullPath(), encoding: String.Encoding.utf8.rawValue) as String
+                
+                for (old, new) in changedNames {
+                    container = RegularFunc.replaceNewName(container: container, oldName: old, newName: new)
+                }
+                try (container as NSString).write(toFile: item.fullPath(), atomically: true, encoding: String.Encoding.utf8.rawValue)
+            } catch {
+                MMLOG.error("文件读取/写入错误 error = \(error)")
+            }
+            continue
+        }
+    }
+}
+MMLOG.info("任务结束!")
 
 
